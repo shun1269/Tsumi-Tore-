@@ -33,7 +33,6 @@ public class RotateUseCase
                 testCase = t;
                 break;
             }
-
         }
 
     }
