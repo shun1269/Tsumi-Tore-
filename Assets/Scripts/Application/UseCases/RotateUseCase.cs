@@ -33,9 +33,20 @@ public class RotateUseCase
                 testCase = t;
                 break;
             }
-
         }
+        return false;
+    }
 
+    private RotationState GetNextRotation(RotationState current, bool isClockwise)
+    {
+        if (isClockwise)
+        {
+            return (RotationState)(((int)current + 1) % 4);
+        }
+        else
+        {
+            return (RotationState)(((int)current + 3) % 4); // 反時計回りは時計回りの逆
+        }
     }
         
 }
