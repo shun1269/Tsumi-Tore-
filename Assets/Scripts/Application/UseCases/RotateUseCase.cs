@@ -20,17 +20,17 @@ public class RotateUseCase
         RotationState newRot = GetNextRotation(currentRot, isClockwise);
 
         // 使うべきキックルールを選ぶ
-        KickTest[] tests = (mino.Data.Type == MinoType.I) 
+        KickTest[] kickTests = (mino.Data.Type == MinoType.I) 
             ? _kickData.I_MinoKicks 
             : _kickData.StandardKicks;
 
         // 今回の回転に対応するパターンを探す
         KickTest testCase = null;
-        foreach (var t in tests)
+        foreach (var test in kickTests)
         {
-            if(t.fromRotation == currentRot && t.toRotation == newRot)
+            if(test.fromRotation == currentRot && test.toRotation == newRot)
             {
-                testCase = t;
+                testCase = test;
                 break;
             }
         }
