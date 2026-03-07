@@ -13,7 +13,7 @@ public class RotateUseCase
         _kickData = kickData;
     }
 
-    public bool TryRoatate(Tetrimino mino, bool isClockwise)
+    public bool TryRotate(Tetrimino mino, bool isClockwise)
     {
         // 今の向きと回転後の向きを取得
         RotationState currentRot = mino.Rotation;
@@ -28,12 +28,33 @@ public class RotateUseCase
         KickTest testCase = null;
         foreach (var test in kickTests)
         {
+            // 回転前と回転後の向きが一致するテストケースを探す
             if(test.fromRotation == currentRot && test.toRotation == newRot)
             {
                 testCase = test;
                 break;
             }
         }
+
+        if (testCase == null)
+        {
+            return false;
+        }
+
+        foreach (var kickOffset in testCase.kickOffsets)
+        {
+            Vector2Int candidatePosition = mino.Position + kickOffset;
+
+            if (!IsValidPosition(mino, candidatePosition, newRot))
+            {
+                continue;
+            }
+
+            mino.Position = candidatePosition;
+            mino.Rotation = newRot;
+            return true;
+        }
+
         return false;
     }
 
@@ -47,6 +68,21 @@ public class RotateUseCase
         {
             return (RotationState)(((int)current + 3) % 4); // 反時計回りは時計回りの逆
         }
+    }
+
+    private bool IsValidPosition(Tetrimino mino, Vector2Int position, RotationState rotation)
+    {
+        foreach (var offset in mino.Data.GetOffsets(rotation))
+        {
+            Vector2Int blockPos = position + offset;
+
+            if (_field.IsCellOccupied(blockPos))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
         
 }
