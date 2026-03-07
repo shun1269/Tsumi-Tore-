@@ -34,7 +34,6 @@ public class RotateUseCase
                 break;
             }
         }
-
         return false;
     }
 
