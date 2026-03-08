@@ -211,8 +211,116 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1400000100
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1400000102}
+  - component: {fileID: 1400000101}
+  m_Layer: 0
+  m_Name: PracticeSceneLifetimeScope
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1400000101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1400000100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14ab5681e8d6fd14495cb3fb75073ec1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  _srsKickData: {fileID: 11400000, guid: 9f7f20824b28453c9bbd6480e0f45df2, type: 2}
+  _tetriminoDatas:
+  - {fileID: 11400000, guid: 1a8470e1d42123c49b55f8bca55bd47a, type: 2}
+  - {fileID: 11400000, guid: 564324ff3033d524698e0e7a164e783d, type: 2}
+  - {fileID: 11400000, guid: 684e64ee349ca284e86a63a37cada7dd, type: 2}
+  - {fileID: 11400000, guid: c9eed91f35b9d76439d99fdaee4da0d9, type: 2}
+  - {fileID: 11400000, guid: 71f6fa9155d789c44ac5114d7daf7ca2, type: 2}
+  - {fileID: 11400000, guid: 69b09915d0bc1dc4298da8fe496335da, type: 2}
+  - {fileID: 11400000, guid: b07410cac6b534440aa2ec93b0551f80, type: 2}
+--- !u!4 &1400000102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1400000100}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1400000200
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1400000202}
+  - component: {fileID: 1400000201}
+  m_Layer: 0
+  m_Name: PracticeSceneDebugController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1400000201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1400000200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bb2fa1d57cb45a2bd4cd7ff10da4d98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _minoPrefab: {fileID: 7552329086451381873, guid: f2a12df3e16b5e54596b62fc5378682e, type: 3}
+  _spawnType: 3
+  _spawnPosition: {x: 4, y: 10}
+  _boardOrigin: {x: -2.25, y: -4.5, z: 0}
+  _cellSize: 0.5
+--- !u!4 &1400000202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1400000200}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 2137511008}
+  - {fileID: 1400000102}
+  - {fileID: 1400000202}

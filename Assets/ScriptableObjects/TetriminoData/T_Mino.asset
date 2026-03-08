@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce998b26239cc1c42a4ccc890cb052cb, type: 3}
   m_Name: T_Mino
   m_EditorClassIdentifier: 
-  Type: 0
+  Type: 3
   North_Offsets:
   - {x: 0, y: 0}
   - {x: -1, y: 0}
