@@ -31,7 +31,7 @@ public class MoveUseCase
             Vector2Int blockPos = position + offset;
 
             // フィールド外または他のミノと衝突している場合は無効
-            if (!_field.IsCellOccupied(blockPos))
+            if (_field.IsCellOccupied(blockPos))
             {
                 return false;
             }
