@@ -19,6 +19,18 @@ public class RotateUseCase
         RotationState currentRot = mino.Rotation;
         RotationState newRot = GetNextRotation(currentRot, isClockwise);
 
+        // Oミノは形状が変わらないため、その場で回転状態だけ更新する
+        if (mino.Data.Type == MinoType.O)
+        {
+            if (!IsValidPosition(mino, mino.Position, newRot))
+            {
+                return false;
+            }
+
+            mino.Rotation = newRot;
+            return true;
+        }
+
         // 使うべきキックルールを選ぶ
         KickTest[] kickTests = (mino.Data.Type == MinoType.I) 
             ? _kickData.I_MinoKicks 
