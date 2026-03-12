@@ -13,6 +13,11 @@ public class Field
     // フィールドの初期化
     public Field()
     {
+        Reset();
+    }
+
+    public void Reset()
+    {
         for (int x = 0; x < WIDTH; x++)
         {
             for (int y = 0; y < HEIGHT_BUFFER; y++)
