@@ -9,9 +9,15 @@ public class Field
     public const int WIDTH = 10;
     public const int HEIGHT = 20; // 見えてる高さ
     public const int HEIGHT_BUFFER = 40; // バッファゾーンの高さ
+    public const int BOTTOM_VISIBLE_ROW = 0; // 最下段の行番号（0始まり）
 
     // フィールドの初期化
     public Field()
+    {
+        Reset();
+    }
+
+    public void Reset()
     {
         for (int x = 0; x < WIDTH; x++)
         {
@@ -88,5 +94,13 @@ public class Field
         }
 
         return linesCleared;
+    }
+
+    public void PlaceWallAt(int x, int y)
+    {
+        if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT_BUFFER)
+        {
+            _grid[x, y] = MinoType.Wall;
+        }
     }
 }

@@ -1,41 +1,56 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using VContainer;
 
 public class PracticeSceneDebugController : MonoBehaviour
 {
     [SerializeField] private GameObject _minoPrefab;
-    [SerializeField] private MinoType _spawnType = MinoType.T;
-    [SerializeField] private Vector2Int _spawnPosition = new Vector2Int(4, 10);
+    [SerializeField] private Vector2Int _spawnPosition = new Vector2Int(4, 18);
     [SerializeField] private Vector3 _boardOrigin = new Vector3(-2.25f, -4.5f, 0f);
     [SerializeField] private float _cellSize = 0.5f;
+    [SerializeField] private float _fallInterval = 0.75f;
+    [SerializeField] private int _visibleRows = Field.HEIGHT;
 
     private readonly List<GameObject> _spawnedBlocks = new List<GameObject>();
+    private Field _field;
     private MoveUseCase _moveUseCase;
     private RotateUseCase _rotateUseCase;
-    private TetriminoData[] _tetriminoDatas;
+    private MinoGenerator _minoGenerator;
     private Tetrimino _currentMino;
+    private float _fallTimer;
+    private bool _isGameOver;
 
     [Inject]
     public void Construct(
+        Field field,
         MoveUseCase moveUseCase,
         RotateUseCase rotateUseCase,
-        TetriminoData[] tetriminoDatas)
+        MinoGenerator minoGenerator)
     {
+        _field = field;
         _moveUseCase = moveUseCase;
         _rotateUseCase = rotateUseCase;
-        _tetriminoDatas = tetriminoDatas;
+        _minoGenerator = minoGenerator;
     }
 
     private void Start()
     {
-        SpawnSelectedMino();
+        StartNewRun();
         RefreshVisuals();
     }
 
     private void Update()
     {
+        if (_isGameOver)
+        {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                StartNewRun();
+                RefreshVisuals();
+            }
+            return;
+        }
+
         if (_currentMino == null)
         {
             return;
@@ -45,17 +60,17 @@ public class PracticeSceneDebugController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            changed = _moveUseCase.tryMove(_currentMino, Vector2Int.left) || changed;
+            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.left) || changed;
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            changed = _moveUseCase.tryMove(_currentMino, Vector2Int.right) || changed;
+            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.right) || changed;
         }
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            changed = _moveUseCase.tryMove(_currentMino, Vector2Int.down) || changed;
+            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.down) || changed;
         }
 
         if (Input.GetKeyDown(KeyCode.X))
@@ -70,8 +85,15 @@ public class PracticeSceneDebugController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            SpawnSelectedMino();
+            StartNewRun();
             changed = true;
+        }
+
+        _fallTimer += Time.deltaTime;
+        if (_fallTimer >= _fallInterval)
+        {
+            _fallTimer = 0f;
+            changed = TryStepDownAndHandleLock() || changed;
         }
 
         if (changed)
@@ -80,45 +102,58 @@ public class PracticeSceneDebugController : MonoBehaviour
         }
     }
 
-    private void SpawnSelectedMino()
+    private void StartNewRun()
     {
-        if (_tetriminoDatas == null || _tetriminoDatas.Length == 0)
-        {
-            Debug.LogWarning("TetriminoData is not assigned.", this);
-            _currentMino = null;
-            return;
-        }
-
-        TetriminoData data = _tetriminoDatas.FirstOrDefault(tetriminoData => tetriminoData.Type == _spawnType);
-        if (data == null)
-        {
-            Debug.LogWarning($"TetriminoData for {_spawnType} was not found.", this);
-            _currentMino = null;
-            return;
-        }
-
-        _currentMino = new Tetrimino(data)
-        {
-            Position = _spawnPosition
-        };
+        _field.Reset();
+        _fallTimer = 0f;
+        _isGameOver = false;
+        SpawnNextMino();
     }
 
     private void RefreshVisuals()
     {
         ClearBlocks();
 
-        if (_currentMino == null || _minoPrefab == null)
+        if (_minoPrefab == null)
+        {
+            return;
+        }
+
+        // 外枠を描画（左右の壁）
+        for (int y = 0; y < _visibleRows; y++)
+        {
+            SpawnBorderBlock(new Vector2Int(-1, y));
+            SpawnBorderBlock(new Vector2Int(Field.WIDTH, y));
+        }
+
+        // 下の壁
+        for (int x = -1; x <= Field.WIDTH; x++)
+        {
+            SpawnBorderBlock(new Vector2Int(x, Field.BOTTOM_VISIBLE_ROW));
+        }
+
+        // フィールド内のブロック
+        for (int y = 0; y < _visibleRows; y++)
+        {
+            for (int x = 0; x < Field.WIDTH; x++)
+            {
+                if (!_field.IsCellOccupied(new Vector2Int(x, y)))
+                {
+                    continue;
+                }
+
+                SpawnBlock(new Vector2Int(x, y));
+            }
+        }
+
+        if (_currentMino == null)
         {
             return;
         }
 
         foreach (Vector2Int offset in _currentMino.Data.GetOffsets(_currentMino.Rotation))
         {
-            Vector2Int gridPosition = _currentMino.Position + offset;
-            Vector3 worldPosition = _boardOrigin + new Vector3(gridPosition.x * _cellSize, gridPosition.y * _cellSize, 0f);
-            GameObject block = Instantiate(_minoPrefab, worldPosition, Quaternion.identity, transform);
-            block.transform.localScale = Vector3.one * _cellSize;
-            _spawnedBlocks.Add(block);
+            SpawnBlock(_currentMino.Position + offset);
         }
     }
 
@@ -133,5 +168,82 @@ public class PracticeSceneDebugController : MonoBehaviour
         }
 
         _spawnedBlocks.Clear();
+    }
+
+    private void SpawnNextMino()
+    {
+        _currentMino = _minoGenerator.GetNextMino();
+        _currentMino.Position = _spawnPosition;
+        _currentMino.Rotation = RotationState.North;
+
+        if (!IsValidCurrentPosition())
+        {
+            _isGameOver = true;
+            _currentMino = null;
+            Debug.Log("Game Over: spawn position is blocked.", this);
+        }
+    }
+
+    private bool TryStepDownAndHandleLock()
+    {
+        if (_moveUseCase.TryMove(_currentMino, Vector2Int.down))
+        {
+            return true;
+        }
+
+        LockCurrentMino();
+        return true;
+    }
+
+    private void LockCurrentMino()
+    {
+        _field.PlaceMino(_currentMino);
+        int clearedLines = _field.ClearFullLines();
+        if (clearedLines > 0)
+        {
+            Debug.Log($"Cleared {clearedLines} line(s).", this);
+        }
+
+        SpawnNextMino();
+    }
+
+    private bool IsValidCurrentPosition()
+    {
+        if (_currentMino == null)
+        {
+            return false;
+        }
+
+        foreach (Vector2Int offset in _currentMino.Data.GetOffsets(_currentMino.Rotation))
+        {
+            Vector2Int blockPos = _currentMino.Position + offset;
+            if (_field.IsCellOccupied(blockPos))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void SpawnBlock(Vector2Int gridPosition)
+    {
+        if (gridPosition.y < 0 || gridPosition.y >= _visibleRows)
+        {
+            return;
+        }
+
+        Vector3 worldPosition = _boardOrigin + new Vector3(gridPosition.x * _cellSize, gridPosition.y * _cellSize, 0f);
+        GameObject block = Instantiate(_minoPrefab, worldPosition, Quaternion.identity, transform);
+        block.transform.localScale = Vector3.one * _cellSize;
+        _spawnedBlocks.Add(block);
+    }
+
+    private void SpawnBorderBlock(Vector2Int gridPosition)
+    {
+        Vector3 worldPosition = _boardOrigin + new Vector3(gridPosition.x * _cellSize, gridPosition.y * _cellSize, 0f);
+        GameObject block = Instantiate(_minoPrefab, worldPosition, Quaternion.identity, transform);
+        block.transform.localScale = Vector3.one * _cellSize;
+        _spawnedBlocks.Add(block);
     }
 }
