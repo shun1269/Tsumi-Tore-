@@ -11,7 +11,14 @@ public class MoveUseCase
         _field = field;
     }
 
-    public bool tryMove(Tetrimino mino, Vector2Int direction)
+    /// <summary>
+    ///  ミノを指定した方向に移動させる。移動が成功した場合はtrueを返し、失敗した場合はfalseを返す。
+    /// メソッド内部では、trueの場合にミノの移動処理が行われ、Positionが更新される。
+    /// </summary>
+    /// <param name="mino"></param>
+    /// <param name="direction"></param>
+    /// <returns></returns>
+    public bool TryMove(Tetrimino mino, Vector2Int direction)
     {
         Vector2Int newPosition = mino.Position + direction;
         

@@ -48,7 +48,6 @@ public class PracticeSceneDebugController : MonoBehaviour
                 StartNewRun();
                 RefreshVisuals();
             }
-
             return;
         }
 
@@ -61,17 +60,17 @@ public class PracticeSceneDebugController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            changed = _moveUseCase.tryMove(_currentMino, Vector2Int.left) || changed;
+            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.left) || changed;
         }
 
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            changed = _moveUseCase.tryMove(_currentMino, Vector2Int.right) || changed;
+            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.right) || changed;
         }
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            changed = _moveUseCase.tryMove(_currentMino, Vector2Int.down) || changed;
+            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.down) || changed;
         }
 
         if (Input.GetKeyDown(KeyCode.X))
@@ -173,7 +172,7 @@ public class PracticeSceneDebugController : MonoBehaviour
 
     private bool TryStepDownAndHandleLock()
     {
-        if (_moveUseCase.tryMove(_currentMino, Vector2Int.down))
+        if (_moveUseCase.TryMove(_currentMino, Vector2Int.down))
         {
             return true;
         }
