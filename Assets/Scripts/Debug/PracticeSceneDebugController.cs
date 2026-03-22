@@ -119,6 +119,20 @@ public class PracticeSceneDebugController : MonoBehaviour
             return;
         }
 
+        // 外枠を描画（左右の壁）
+        for (int y = 0; y < _visibleRows; y++)
+        {
+            SpawnBorderBlock(new Vector2Int(-1, y));
+            SpawnBorderBlock(new Vector2Int(Field.WIDTH, y));
+        }
+
+        // 下の壁
+        for (int x = -1; x <= Field.WIDTH; x++)
+        {
+            SpawnBorderBlock(new Vector2Int(x, Field.BOTTOM_VISIBLE_ROW));
+        }
+
+        // フィールド内のブロック
         for (int y = 0; y < _visibleRows; y++)
         {
             for (int x = 0; x < Field.WIDTH; x++)
@@ -219,6 +233,14 @@ public class PracticeSceneDebugController : MonoBehaviour
             return;
         }
 
+        Vector3 worldPosition = _boardOrigin + new Vector3(gridPosition.x * _cellSize, gridPosition.y * _cellSize, 0f);
+        GameObject block = Instantiate(_minoPrefab, worldPosition, Quaternion.identity, transform);
+        block.transform.localScale = Vector3.one * _cellSize;
+        _spawnedBlocks.Add(block);
+    }
+
+    private void SpawnBorderBlock(Vector2Int gridPosition)
+    {
         Vector3 worldPosition = _boardOrigin + new Vector3(gridPosition.x * _cellSize, gridPosition.y * _cellSize, 0f);
         GameObject block = Instantiate(_minoPrefab, worldPosition, Quaternion.identity, transform);
         block.transform.localScale = Vector3.one * _cellSize;
