@@ -31,7 +31,7 @@ public class Field
     // 指定した位置がフィールド内で占有されているかをチェック MinoType.Noneであればtrueを返す
     public bool IsCellOccupied(Vector2Int pos)
     {
-        if (pos.x < 0 || pos.x >= WIDTH || pos.y < 0)
+        if (pos.x < 0 || pos.x >= WIDTH || pos.y <= 0)
         {
             return true; // フィールド外は占有されているとみなす
         }

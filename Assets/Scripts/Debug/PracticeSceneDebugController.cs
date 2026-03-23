@@ -9,6 +9,9 @@ public class PracticeSceneDebugController : MonoBehaviour
     [SerializeField] private Vector3 _boardOrigin = new Vector3(-2.25f, -4.5f, 0f);
     [SerializeField] private float _cellSize = 0.5f;
     [SerializeField] private float _fallInterval = 0.75f;
+    [SerializeField] private float _horizontalInitialDelay = 0.15f;
+    [SerializeField] private float _horizontalRepeatInterval = 0.05f;
+    [SerializeField] private float _softDropRepeatInterval = 0.03f;
     [SerializeField] private int _visibleRows = Field.HEIGHT;
 
     private readonly List<GameObject> _spawnedBlocks = new List<GameObject>();
@@ -18,6 +21,9 @@ public class PracticeSceneDebugController : MonoBehaviour
     private MinoGenerator _minoGenerator;
     private Tetrimino _currentMino;
     private float _fallTimer;
+    private float _horizontalRepeatTimer;
+    private float _softDropRepeatTimer;
+    private int _currentHorizontalDirection;
     private bool _isGameOver;
 
     [Inject]
@@ -58,20 +64,8 @@ public class PracticeSceneDebugController : MonoBehaviour
 
         bool changed = false;
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.left) || changed;
-        }
-
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.right) || changed;
-        }
-
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            changed = _moveUseCase.TryMove(_currentMino, Vector2Int.down) || changed;
-        }
+        changed = HandleHorizontalHold() || changed;
+        changed = HandleSoftDropHold() || changed;
 
         if (Input.GetKeyDown(KeyCode.X))
         {
@@ -81,6 +75,11 @@ public class PracticeSceneDebugController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Z))
         {
             changed = _rotateUseCase.TryRotate(_currentMino, false) || changed;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            changed = HardDropCurrentMino() || changed;
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -106,8 +105,104 @@ public class PracticeSceneDebugController : MonoBehaviour
     {
         _field.Reset();
         _fallTimer = 0f;
+        _horizontalRepeatTimer = 0f;
+        _softDropRepeatTimer = 0f;
+        _currentHorizontalDirection = 0;
         _isGameOver = false;
         SpawnNextMino();
+    }
+
+    private bool HandleHorizontalHold()
+    {
+        int direction = 0;
+        if (Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
+        {
+            direction = -1;
+        }
+        else if (Input.GetKey(KeyCode.RightArrow) && !Input.GetKey(KeyCode.LeftArrow))
+        {
+            direction = 1;
+        }
+
+        if (direction == 0)
+        {
+            _currentHorizontalDirection = 0;
+            _horizontalRepeatTimer = 0f;
+            return false;
+        }
+
+        KeyCode key = direction < 0 ? KeyCode.LeftArrow : KeyCode.RightArrow;
+        Vector2Int delta = direction < 0 ? Vector2Int.left : Vector2Int.right;
+
+        bool isNewDirection = _currentHorizontalDirection != direction;
+        bool isFirstPress = Input.GetKeyDown(key);
+        if (isNewDirection || isFirstPress)
+        {
+            _currentHorizontalDirection = direction;
+            _horizontalRepeatTimer = Mathf.Max(0.01f, _horizontalInitialDelay);
+            return _moveUseCase.TryMove(_currentMino, delta);
+        }
+
+        float repeatInterval = Mathf.Max(0.01f, _horizontalRepeatInterval);
+        _horizontalRepeatTimer -= Time.deltaTime;
+
+        bool moved = false;
+        while (_horizontalRepeatTimer <= 0f)
+        {
+            bool stepMoved = _moveUseCase.TryMove(_currentMino, delta);
+            moved = stepMoved || moved;
+            _horizontalRepeatTimer += repeatInterval;
+        }
+
+        return moved;
+    }
+
+    private bool HandleSoftDropHold()
+    {
+        if (!Input.GetKey(KeyCode.DownArrow))
+        {
+            _softDropRepeatTimer = 0f;
+            return false;
+        }
+
+        float repeatInterval = Mathf.Max(0.01f, _softDropRepeatInterval);
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            _softDropRepeatTimer = repeatInterval;
+            return TryStepDownAndHandleLock();
+        }
+
+        _softDropRepeatTimer -= Time.deltaTime;
+
+        bool changed = false;
+        while (_softDropRepeatTimer <= 0f)
+        {
+            changed = TryStepDownAndHandleLock() || changed;
+            _softDropRepeatTimer += repeatInterval;
+
+            if (_isGameOver || _currentMino == null)
+            {
+                break;
+            }
+        }
+
+        return changed;
+    }
+
+    private bool HardDropCurrentMino()
+    {
+        if (_currentMino == null)
+        {
+            return false;
+        }
+
+        while (_moveUseCase.TryMove(_currentMino, Vector2Int.down))
+        {
+        }
+
+        LockCurrentMino();
+        _fallTimer = 0f;
+        return true;
     }
 
     private void RefreshVisuals()
